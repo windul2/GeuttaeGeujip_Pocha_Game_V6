@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a111c">
+<title>포차 야간 전력망 | 그때그집포차</title>
+<meta name="description" content="전선을 돌려 세 곳의 간판을 켜는 그때그집포차의 야간 퍼즐 게임입니다.">
+<style>
+:root {
+  color-scheme: dark;
+  font-family: "Inter", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  --back:#0a111c; --panel:#101b28; --border:#263b4b; --mute:#9eb1c3;
+  --text:#f0f5fa; --mint:#71f3d0; --mint-dark:#103f3c; --amber:#ffc778;
+  --mono:"IBM Plex Mono",Consolas,monospace;
+}
+* { box-sizing:border-box }
+html,body { margin:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none }
+body { color:var(--text); background:radial-gradient(ellipse at 70% 0%,#122b39,transparent 52%),var(--back) }
+button,a { -webkit-tap-highlight-color:transparent; touch-action:manipulation }
+button { font:inherit }
+button:focus-visible,a:focus-visible { outline:2px solid var(--amber); outline-offset:3px }
+button:disabled { cursor:default }
+[hidden] { display:none !important }
+.shell {
+  max-width:1160px; margin:auto; height:100vh; height:100dvh; max-height:900px;
+  padding:max(14px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right))
+    max(14px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
+  display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:14px;
+}
+.mast { display:flex; justify-content:space-between; align-items:center; gap:12px; min-width:0 }
+.brand { display:flex; align-items:center; gap:10px; min-width:0 }
+.brand-icon { display:grid; place-items:center; width:34px; height:34px; flex:none; border-radius:9px; background:#173833; border:1px solid #31564e; color:var(--mint); font-size:20px }
+.brand-name { font-weight:800; font-size:15px; letter-spacing:-.035em }
+.shop { display:flex; align-items:center; gap:8px; flex:none; color:var(--text); text-decoration:none; border:1px solid #4d4336; background:#27251f; border-radius:8px; padding:9px 12px; font-size:12px; font-weight:750 }
+.shop span { color:var(--amber); font-size:15px; line-height:1 }
+.shop:hover { background:#393020 }
+.main { min-height:0; display:grid; grid-template-columns:minmax(230px, .68fr) minmax(0, 1.5fr); gap:14px }
+.info,.console { min-width:0; min-height:0; border-radius:16px; border:1px solid var(--border); overflow:hidden }
+.info { display:flex; flex-direction:column; justify-content:center; gap:clamp(13px,3vh,28px); padding:clamp(16px,3vw,35px); position:relative; background:radial-gradient(ellipse at 0% 0%,#163b3e 0%,transparent 59%),#111d2b }
+.info::before { content:""; position:absolute; left:0; top:0; width:42%; height:2px; background:linear-gradient(90deg,var(--mint),transparent) }
+.eyebrow { color:var(--mint); font:700 11px var(--mono); letter-spacing:.19em; margin:0 0 9px }
+h1 { margin:0; font-size:clamp(31px,4.15vw,63px); line-height:1.04; letter-spacing:-.085em; font-weight:900 }
+h1 span { display:block; color:var(--mint) }
+.description { color:#b9cad7; font-size:clamp(12px,1.24vw,14px); line-height:1.55; margin:13px 0 0; letter-spacing:-.025em; word-break:keep-all }
+.meters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-block:1px solid var(--border); padding:10px 0; gap:7px }
+.meter { min-width:0 }
+.meter + .meter { padding-left:10px; border-left:1px solid var(--border) }
+.meter span { display:block; color:var(--mute); font-size:10px; font-weight:750; white-space:nowrap }
+.meter strong { display:block; font:700 clamp(15px,2vw,22px) var(--mono); white-space:nowrap; margin-top:4px; letter-spacing:-.035em }
+.destinations { display:grid; gap:6px; padding:0; margin:0; list-style:none }
+.destinations li { display:grid; grid-template-columns:12px 1fr auto; align-items:center; gap:9px; padding:8px 9px; border:1px solid #2b4050; border-radius:7px; font-size:12px; font-weight:750; background:#0e1925 }
+.destinations li::before { content:""; width:7px; height:7px; border-radius:50%; background:#778b9b; justify-self:center }
+.destinations li.on { border-color:#366c5f; color:var(--mint); background:#132d30 }
+.destinations li.on::before { background:var(--mint); box-shadow:0 0 9px #71f3d0af }
+.destinations small { color:#a7bacb; font-size:10px; font-weight:600; white-space:nowrap }
+.destinations li.on small { color:var(--mint) }
+.console { display:grid; grid-template-rows:auto minmax(0,1fr) auto; background:#0c1722 }
+.console-top,.console-bottom { min-width:0; display:flex; align-items:center; justify-content:space-between; gap:9px; padding:10px 14px; background:#111e2b }
+.console-top { border-bottom:1px solid var(--border) }
+.console-bottom { min-height:45px; border-top:1px solid var(--border) }
+.level { display:flex; align-items:center; gap:8px; min-width:0 }
+.level-tag { font:750 11px var(--mono); color:var(--amber); border:1px solid #654e34; border-radius:5px; background:#302820; padding:4px 6px; white-space:nowrap }
+.level-name { font-weight:800; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.state { flex:none; display:flex; align-items:center; gap:5px; color:#b8c7d4; font-size:11px; font-weight:800 }
+.state::before { content:""; width:7px; height:7px; border-radius:50%; background:#869aab }
+.state[data-active=true] { color:var(--mint) }
+.state[data-active=true]::before { background:var(--mint); box-shadow:0 0 8px var(--mint) }
+.field { container-type:size; position:relative; overflow:hidden; display:grid; place-items:center; isolation:isolate; background:#0a1721 }
+.city { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none }
+.frame {
+  position:relative; aspect-ratio:1; width:min(calc(100cqw - 65px),calc(100cqh - 26px),480px);
+  border:1px solid #426372; border-radius:12px; padding:5px; background:#0c1b27;
+  box-shadow:0 12px 45px #050a13c2,0 0 0 4px #172c3985,0 0 38px #24a49218;
+}
+.board { width:100%; height:100%; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); grid-template-rows:repeat(5,minmax(0,1fr)); gap:3px }
+.tile { min-height:0; min-width:0; position:relative; border:0; border-radius:5px; padding:0; background:#172c3b; box-shadow:inset 0 0 0 1px #254052; cursor:pointer; overflow:visible }
+.tile:nth-child(2n) { background:#152936 }
+.tile.on { background:#173936; box-shadow:inset 0 0 0 1px #2c594f }
+.tile:not(:disabled):hover { background:#234253; box-shadow:inset 0 0 0 1px #8cafbd }
+.tile:focus-visible { z-index:2; outline-offset:0 }
+.tile canvas { display:block; width:100%; height:100%; pointer-events:none }
+.node { position:absolute; top:var(--position); transform:translateY(-50%); display:grid; place-items:center; width:25px; height:22px; border:1px solid #4a6576; border-radius:5px; background:#142634; color:#bed0de; font-size:10px; font-weight:900; font-family:var(--mono); pointer-events:none }
+.node::after { position:absolute; content:""; top:50%; height:2px; width:5px; background:#4a6576 }
+.node.source { left:-28px; color:var(--amber); border-color:#a77541; background:#35291f; font-size:16px }
+.node.source::after { right:-6px; background:var(--amber) }
+.node.target { right:-28px }
+.node.target::after { left:-6px }
+.node.target.on { color:#0b2c27; background:var(--mint); border-color:var(--mint); box-shadow:0 0 12px #71f3d095 }
+.node.target.on::after { background:var(--mint) }
+.message { color:#c5d2de; font-size:12px; font-weight:650; line-height:1.3; letter-spacing:-.025em }
+.key { white-space:nowrap; font-size:10px; color:var(--mute) }
+.controls { min-width:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px }
+.control { display:flex; align-items:center; justify-content:center; min-height:47px; gap:7px; padding:7px 4px; border-radius:9px; border:1px solid var(--border); background:#152333; color:var(--text); cursor:pointer; font-size:14px; font-weight:800; letter-spacing:-.03em; white-space:nowrap }
+.control:not(:disabled):hover { border-color:#7296aa; background:#203648 }
+.control:disabled { color:#9cafbf }
+.control .symbol { color:#9cc6d3; line-height:1; font-size:17px; font-weight:700 }
+.control.primary { background:var(--mint); color:#0b2725; border-color:var(--mint) }
+.control.primary:not(:disabled):hover { background:#b4ffe9; border-color:#b4ffe9 }
+.control.primary:disabled { color:#9ac5bd; background:#204442; border-color:#37645e }
+.control.primary .symbol { color:inherit; font-size:12px }
+.control.auto[aria-pressed=true] { color:var(--mint); background:#133631; border-color:#407d6f }
+.switch { border-radius:9px; border:1px solid #597284; width:22px; height:12px; position:relative; flex:none }
+.switch::after { content:""; position:absolute; width:6px; height:6px; top:2px; left:2px; background:#9fb9c7; border-radius:50% }
+.auto[aria-pressed=true] .switch { border-color:var(--mint) }
+.auto[aria-pressed=true] .switch::after { left:12px; background:var(--mint) }
+@media (min-width:761px) and (max-height:560px) {
+  .shell { gap:8px; padding-block:8px }
+  .main { gap:8px }
+  .info { padding:12px 17px; gap:8px }
+  h1 { font-size:33px }
+  .eyebrow { margin-bottom:4px }
+  .description { margin-top:7px }
+  .meters { padding:5px 0 }
+  .destinations { gap:3px }
+  .destinations li { padding:4px 7px }
+  .console-top,.console-bottom { padding-block:6px; min-height:0 }
+  .control { min-height:37px }
+}
+@media (max-width:760px) {
+  .shell { max-width:570px; padding-inline:max(10px,env(safe-area-inset-left)) max(10px,env(safe-area-inset-right)); padding-top:max(8px,env(safe-area-inset-top)); padding-bottom:max(8px,env(safe-area-inset-bottom)); gap:8px }
+  .brand-icon { width:29px; height:29px; font-size:17px }
+  .brand-name { font-size:13px }
+  .shop { padding:6px 8px; font-size:11px }
+  .main { grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); gap:8px }
+  .info { display:grid; grid-template-columns:1fr; gap:8px; padding:10px 11px; border-radius:11px }
+  .title { display:flex; justify-content:space-between; align-items:baseline; gap:5px; flex-wrap:wrap }
+  .eyebrow { order:2; margin:0; font-size:9px; letter-spacing:.08em }
+  h1 { font-size:clamp(22px,6vw,31px) }
+  h1 span { display:inline }
+  .description { flex-basis:100%; margin:1px 0 0; font-size:11px; line-height:1.35 }
+  .meters { padding:5px 0; gap:4px }
+  .meter { display:flex; align-items:center; gap:5px; justify-content:center }
+  .meter + .meter { padding-left:4px }
+  .meter span { font-size:9px }
+  .meter strong { margin:0; font-size:13px }
+  .destinations { grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px }
+  .destinations li { grid-template-columns:6px 1fr; gap:5px; padding:4px 5px; font-size:10px; white-space:nowrap }
+  .destinations li::before { width:5px; height:5px }
+  .destinations small,.key { display:none }
+  .console { border-radius:11px }
+  .console-top,.console-bottom { min-height:0; padding:7px 9px }
+  .level-name { font-size:12px }
+  .level-tag { font-size:10px; padding:3px 4px }
+  .state,.message { font-size:10px }
+  .frame { width:min(calc(100cqw - 56px),calc(100cqh - 16px),420px); padding:3px; border-radius:8px }
+  .board { gap:2px }
+  .node { width:21px; height:19px }
+  .node.source { left:-24px }
+  .node.target { right:-24px }
+  .controls { gap:4px }
+  .control { min-height:43px; gap:4px; font-size:12px }
+  .control .symbol { font-size:14px }
+  .control.primary .symbol { font-size:10px }
+  .switch { width:19px }
+  .auto[aria-pressed=true] .switch::after { left:9px }
+}
+@media (max-width:760px) and (max-height:535px) and (orientation:portrait) {
+  .description { display:none }
+  .info { gap:5px; padding-block:7px }
+  .shell,.main { gap:5px }
+  .control { min-height:36px }
+}
+@media (max-height:450px) and (orientation:landscape) {
+  .shell { max-width:940px; gap:4px; padding-block:4px }
+  .brand-icon { width:23px; height:23px; font-size:15px }
+  .brand-name,.shop { font-size:10px }
+  .shop { padding:3px 6px }
+  .main { grid-template-columns:minmax(165px,.55fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap:6px }
+  .info { display:flex; gap:6px; padding:6px 10px }
+  .title { display:block }
+  .eyebrow { margin-bottom:4px; font-size:8px }
+  h1 { font-size:25px }
+  h1 span { display:inline }
+  .description { margin-top:5px; font-size:10px }
+  .meters { padding:3px 0 }
+  .meter strong { font-size:12px }
+  .destinations { gap:3px }
+  .destinations li { padding:3px 4px; font-size:10px }
+  .console-top,.console-bottom { padding:3px 7px; min-height:0 }
+  .message { font-size:10px }
+  .frame { width:min(calc(100cqw - 60px),calc(100cqh - 12px),380px); padding:3px }
+  .control { min-height:32px; font-size:11px }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="mast">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">⌁</span><span class="brand-name">그때그집포차</span></div>
+    <a class="shop" href="https://windul2.github.io/GeuttaeGeujip_Pocha_V6/" target="_blank" rel="noopener noreferrer">포차 구경하기 <span aria-hidden="true">↗</span></a>
+  </header>
+  <main class="main">
+    <section class="info" aria-labelledby="game-title">
+      <div class="title">
+        <p class="eyebrow" lang="en">NIGHT SIGNAL</p>
+        <h1 id="game-title">포차 야간 <span>전력망</span></h1>
+        <p class="description">전선을 눌러 돌리고, 발전기에서 세 곳의 간판까지 전기를 보내세요.</p>
+      </div>
+      <div class="meters">
+        <div class="meter"><span>연결</span><strong id="lit">0/3</strong></div>
+        <div class="meter"><span>회전</span><strong id="moves">0</strong></div>
+        <div class="meter"><span>시간</span><strong id="clock">00:00</strong></div>
+      </div>
+      <ul class="destinations" aria-label="전력 공급 목표">
+        <li><span>1 포차 간판</span><small>대기</small></li>
+        <li><span>2 골목 등불</span><small>대기</small></li>
+        <li><span>3 야외 테이블</span><small>대기</small></li>
+      </ul>
+    </section>
+    <section class="console" aria-label="전선 퍼즐">
+      <div class="console-top">
+        <div class="level"><span class="level-tag" id="level-number">01 / 03</span><span class="level-name" id="level-name">간판에 첫 불을</span></div>
+        <span class="state" id="state">대기 중</span>
+      </div>
+      <div class="field">
+        <canvas class="city" id="city" aria-hidden="true"></canvas>
+        <div class="frame">
+          <div class="board" id="board" role="group" aria-label="전선 타일 5행 5열"></div>
+          <span class="node source" id="source" title="발전기" aria-label="발전기">ϟ</span>
+          <span class="node target" aria-hidden="true">1</span>
+          <span class="node target" aria-hidden="true">2</span>
+          <span class="node target" aria-hidden="true">3</span>
+        </div>
+      </div>
+      <div class="console-bottom">
+        <span class="message" id="message" role="status">시작을 누른 뒤 전선 타일을 눌러 돌리세요.</span>
+        <span class="key">클릭 · 터치 · Enter</span>
+      </div>
+    </section>
+  </main>
+  <footer class="controls" aria-label="게임 조작">
+    <button class="control primary" id="start" type="button"><span class="symbol" aria-hidden="true">▶</span><span id="start-label">시작</span></button>
+    <button class="control" id="pause" type="button" disabled><span class="symbol" aria-hidden="true">Ⅱ</span>정지</button>
+    <button class="control" id="reset" type="button"><span class="symbol" aria-hidden="true">↺</span>처음으로</button>
+    <button class="control auto" id="auto" type="button" aria-pressed="false"><span class="switch" aria-hidden="true"></span>자동플레이</button>
+  </footer>
+</div>
+<script>
+"use strict";
+
+const byId = id => document.getElementById(id);
+const board = byId("board");
+const city = byId("city");
+const destinationRows = [...document.querySelectorAll(".destinations li")];
+const goalNodes = [...document.querySelectorAll(".node.target")];
+const size = 5;
+const north = 1, east = 2, south = 4, west = 8;
+const directions = [
+  {mask:north, opposite:south, row:-1, col:0, x:50, y:-3, label:"위"},
+  {mask:east, opposite:west, row:0, col:1, x:103, y:50, label:"오른쪽"},
+  {mask:south, opposite:north, row:1, col:0, x:50, y:103, label:"아래"},
+  {mask:west, opposite:east, row:0, col:-1, x:-3, y:50, label:"왼쪽"}
+];
+
+const levels = [
+  {
+    name:"간판에 첫 불을", sourceRow:2, goals:[0,2,4],
+    paths:[[10,11,12,7,2,3,4],[12,13,14],[12,17,22,23,24]],
+    twists:[0,0,0,1,1,0,0,1,0,0,0,1,1,0,1,0,0,1,0,0,0,0,2,1,0]
+  },
+  {
+    name:"골목 끝까지", sourceRow:4, goals:[0,1,3],
+    paths:[[20,21,16,11,10,5,0,1,2,3,4],[11,12,7,8,9],[12,17,18,19]],
+    twists:[2,1,1,1,2,1,0,2,1,2,1,2,1,0,0,0,2,1,1,2,1,2,0,0,0]
+  },
+  {
+    name:"포차의 마지막 점등", sourceRow:0, goals:[0,2,4],
+    paths:[[0,5,6,11,12,7,8,3,4],[12,13,14],[11,16,15,20,21,22,17,18,23,24]],
+    twists:[1,0,0,2,1,3,2,1,3,0,0,2,3,1,3,2,1,3,2,0,1,3,2,1,3]
+  }
+];
+
+const fillers = [3,10,6,5,12,3,9,5,10,6,12,6,9,5,12,3,10,9,6,3,12,5,10,6,5];
+let levelIndex = 0;
+let mode = "ready";
+let automatic = false;
+let autoJob = 0;
+let moves = 0;
+let elapsed = 0;
+let runningSince = 0;
+let tiles = [];
+let goals = [];
+let sourceIndex = 0;
+let lastClock = "";
+let previousPowered = -1;
+let previewedStatus = "";
+const cellViews = [];
+
+function rotate(mask) {
+  return ((mask << 1) & 15) | (mask >> 3);
+}
+
+function initializeLevel(index) {
+  const level = levels[index];
+  levelIndex = index;
+  moves = 0;
+  elapsed = 0;
+  runningSince = 0;
+  previousPowered = -1;
+  sourceIndex = level.sourceRow * size;
+  goals = level.goals.map(row => row * size + size - 1);
+  const solution = Array(size * size).fill(0);
+  solution[sourceIndex] = west;
+  goals.forEach(cell => { solution[cell] |= east; });
+
+  for (const path of level.paths) {
+    for (let step = 1; step < path.length; step++) {
+      const from = path[step - 1];
+      const to = path[step];
+      const dir = directions.find(item => item.row * size + item.col === to - from);
+      solution[from] |= dir.mask;
+      solution[to] |= dir.opposite;
+    }
+  }
+
+  tiles = solution.map((wanted, index) => {
+    let mask = wanted || fillers[(index + levelIndex * 7) % fillers.length];
+    for (let step = 0; step < level.twists[index]; step++) mask = rotate(mask);
+    return {mask, wanted, powered:false};
+  });
+
+  byId("source").style.setProperty("--position", (level.sourceRow * 20 + 10) + "%");
+  goalNodes.forEach((node, index) => {
+    node.style.setProperty("--position", (level.goals[index] * 20 + 10) + "%");
+  });
+  byId("level-number").textContent = String(index + 1).padStart(2, "0") + " / 03";
+  byId("level-name").textContent = level.name;
+  updatePower();
+  render();
+}
+
+function energizedTiles() {
+  const connected = new Set();
+  if (!(tiles[sourceIndex].mask & west)) return connected;
+  const queue = [sourceIndex];
+  connected.add(sourceIndex);
+  for (const index of queue) {
+    const row = Math.floor(index / size);
+    const col = index % size;
+    for (const dir of directions) {
+      if (!(tiles[index].mask & dir.mask)) continue;
+      const nextRow = row + dir.row;
+      const nextCol = col + dir.col;
+      if (nextRow < 0 || nextRow >= size || nextCol < 0 || nextCol >= size) continue;
+      const next = nextRow * size + nextCol;
+      if (connected.has(next) || !(tiles[next].mask & dir.opposite)) continue;
+      connected.add(next);
+      queue.push(next);
+    }
+  }
+  return connected;
+}
+
+function updatePower() {
+  const connected = energizedTiles();
+  tiles.forEach((tile, index) => { tile.powered = connected.has(index); });
+  const active = goals.map(index => connected.has(index) && Boolean(tiles[index].mask & east));
+  active.forEach((on, index) => {
+    goalNodes[index].classList.toggle("on", on);
+    destinationRows[index].classList.toggle("on", on);
+    destinationRows[index].querySelector("small").textContent = on ? "점등" : "대기";
+    destinationRows[index].setAttribute("aria-label", destinationRows[index].firstElementChild.textContent + (on ? " 점등" : " 대기"));
+  });
+  const count = active.filter(Boolean).length;
+  byId("lit").textContent = count + "/3";
+  if (count !== previousPowered) {
+    previousPowered = count;
+    drawCity();
+  }
+  return count;
+}
+
+function timeText(seconds) {
+  return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
+}
+
+function drawClock() {
+  const seconds = Math.floor((elapsed + (runningSince ? performance.now() - runningSince : 0)) / 1000);
+  const value = timeText(seconds);
+  if (value !== lastClock) {
+    byId("clock").textContent = value;
+    lastClock = value;
+  }
+}
+
+function freezeClock() {
+  if (runningSince) elapsed += performance.now() - runningSince;
+  runningSince = 0;
+}
+
+function changeMode(next) {
+  if (next === "running" && mode !== "running") runningSince = performance.now();
+  if (mode === "running" && next !== "running") freezeClock();
+  mode = next;
+  render();
+  queueAuto();
+}
+
+function turnCell(index) {
+  if (mode !== "running") return;
+  tiles[index].mask = rotate(tiles[index].mask);
+  moves++;
+  if (updatePower() === goals.length) {
+    changeMode(levelIndex === levels.length - 1 ? "finished" : "cleared");
+  } else {
+    render();
+  }
+}
+
+function start() {
+  if (mode === "running") return;
+  if (mode === "finished") initializeLevel(0);
+  if (mode === "cleared") initializeLevel(levelIndex + 1);
+  changeMode("running");
+}
+
+function reset() {
+  clearTimeout(autoJob);
+  automatic = false;
+  freezeClock();
+  mode = "ready";
+  initializeLevel(0);
+}
+
+function queueAuto() {
+  clearTimeout(autoJob);
+  if (!automatic) return;
+  if (mode === "cleared") {
+    autoJob = setTimeout(start, 1350);
+  } else if (mode === "running") {
+    autoJob = setTimeout(autoTurn, 245);
+  }
+}
+
+function autoTurn() {
+  if (!automatic || mode !== "running") return;
+  const index = tiles.findIndex(tile => tile.wanted && tile.mask !== tile.wanted);
+  if (index >= 0) turnCell(index);
+  if (mode === "running" && index >= 0) queueAuto();
+}
+
+function toggleAuto() {
+  automatic = !automatic;
+  if (automatic && (mode === "ready" || mode === "paused" || mode === "finished")) {
+    start();
+  } else {
+    render();
+    queueAuto();
+  }
+}
+
+function drawTile(index) {
+  const tile = tiles[index];
+  const {canvas, button} = cellViews[index];
+  button.classList.toggle("on", tile.powered);
+  const ports = directions.filter(dir => tile.mask & dir.mask);
+  const location = (Math.floor(index / size) + 1) + "행 " + (index % size + 1) + "열";
+  button.setAttribute("aria-label", location + " " + ports.map(dir => dir.label).join("·") + " 전선" + (tile.powered ? ", 통전" : ""));
+  const ctx = canvas.getContext("2d");
+  const logicalSize = 100;
+  ctx.setTransform(canvas.width / logicalSize, 0, 0, canvas.height / logicalSize, 0, 0);
+  ctx.clearRect(0, 0, logicalSize, logicalSize);
+
+  ctx.beginPath();
+  for (const dir of ports) {
+    ctx.moveTo(50, 50);
+    ctx.lineTo(dir.x, dir.y);
+  }
+  ctx.lineWidth = 15;
+  ctx.strokeStyle = "#0b1720";
+  ctx.stroke();
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = tile.powered ? "#78f5d5" : "#7692a9";
+  if (tile.powered) {
+    ctx.shadowBlur = canvas.width * .10;
+    ctx.shadowColor = "#39e4c0";
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  ctx.beginPath();
+  ctx.arc(50, 50, 11, 0, Math.PI * 2);
+  ctx.fillStyle = tile.powered ? "#347e6a" : "#2e4a5f";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = tile.powered ? "#a6ffe8" : "#7793a7";
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(50, 50, 3, 0, Math.PI * 2);
+  ctx.fillStyle = tile.powered ? "#d9fff3" : "#97acbd";
+  ctx.fill();
+}
+
+function render() {
+  const stateText = {ready:"대기 중",running:automatic?"자동 연결 중":"연결 중",paused:"정지됨",cleared:"구역 점등",finished:"전체 점등"};
+  const messages = {
+    ready:"시작을 누른 뒤 전선 타일을 눌러 돌리세요.",
+    running:automatic?"전선을 차례로 돌려 세 곳을 연결하고 있어요.":"왼쪽 발전기에서 오른쪽 1·2·3번까지 전선을 이으세요.",
+    paused:"시작을 누르면 멈춘 곳에서 이어집니다.",
+    cleared:automatic?"간판 세 곳 점등 완료! 다음 구역으로 이동합니다.":"간판 세 곳 점등 완료! 다음 구역으로 이동하세요.",
+    finished:"세 구역의 불을 모두 켰어요! 포차가 문을 열었습니다."
+  };
+  byId("state").textContent = stateText[mode];
+  byId("state").dataset.active = String(["running","cleared","finished"].includes(mode));
+  if (messages[mode] !== previewedStatus) {
+    byId("message").textContent = messages[mode];
+    previewedStatus = messages[mode];
+  }
+  byId("start-label").textContent = {ready:"시작",running:"시작",paused:"시작",cleared:"다음 구역",finished:"다시 시작"}[mode];
+  byId("start").disabled = mode === "running";
+  byId("pause").disabled = mode !== "running" && !(mode === "cleared" && automatic);
+  byId("auto").setAttribute("aria-pressed", String(automatic));
+  byId("moves").textContent = String(moves);
+  drawClock();
+  cellViews.forEach(({button}, index) => {
+    button.disabled = mode !== "running";
+    drawTile(index);
+  });
+}
+
+function drawCity() {
+  const bounds = city.getBoundingClientRect();
+  if (bounds.width === 0 || bounds.height === 0) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  city.width = Math.round(bounds.width * dpr);
+  city.height = Math.round(bounds.height * dpr);
+  const ctx = city.getContext("2d");
+  ctx.scale(dpr, dpr);
+  const w = bounds.width, h = bounds.height;
+  const sky = ctx.createLinearGradient(0,0,0,h);
+  sky.addColorStop(0,"#0b1928");
+  sky.addColorStop(.62,"#122b36");
+  sky.addColorStop(1,"#0b1b27");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,w,h);
+
+  let seed = 101;
+  const rand = () => {
+    seed = (Math.imul(seed,1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  for (let i = 0; i < 52; i++) {
+    const x = rand() * w, y = rand() * h * .64;
+    ctx.fillStyle = i % 7 ? "#93b4ba35" : "#abd5d480";
+    ctx.fillRect(x,y,i % 7 ? 1 : 2,1);
+  }
+
+  const horizon = h * .78;
+  const step = Math.max(21,w / 26);
+  for (let x = -step; x < w; x += step) {
+    const top = horizon - h * (.06 + rand() * .22);
+    const roof = step * (.67 + rand() * .3);
+    ctx.fillStyle = x % 2 < 1 ? "#10232f" : "#102631";
+    ctx.fillRect(x,top,roof,horizon-top);
+    ctx.fillStyle = "#35505886";
+    ctx.fillRect(x,top,roof,1);
+    for (let yy = top + 9; yy < horizon - 6; yy += 12) {
+      for (let xx = x + 5; xx < x + roof - 2; xx += 9) {
+        const light = rand();
+        if (light < .52) continue;
+        ctx.fillStyle = light > .85 && previousPowered > 0 ? "#e7a76599" : "#557f8170";
+        ctx.fillRect(xx,yy,2,3);
+      }
+    }
+  }
+
+  ctx.strokeStyle = "#43687446";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = -7; i <= 7; i++) {
+    ctx.moveTo(w * .5 + i * w / 43,horizon);
+    ctx.lineTo(w * .5 + i * w / 7,h);
+  }
+  for (let i = 0; i < 7; i++) {
+    const y = horizon + (h - horizon) * (i * i / 36);
+    ctx.moveTo(0,y);
+    ctx.lineTo(w,y);
+  }
+  ctx.stroke();
+
+  const awningW = Math.min(70, w * .16);
+  const x = w - awningW - 13, y = horizon - Math.min(36,h * .12);
+  ctx.fillStyle = "#1f3b42";
+  ctx.fillRect(x + 4,y + 8,awningW - 8,horizon-y-8);
+  ctx.fillStyle = previousPowered > 0 ? "#edaa69" : "#527478";
+  ctx.fillRect(x + awningW * .2,y + 13,awningW * .35,Math.max(2,horizon-y-16));
+  for (let stripe = 0; stripe < 7; stripe++) {
+    ctx.fillStyle = stripe % 2 ? "#d69359" : "#efd0a2";
+    ctx.globalAlpha = previousPowered > 0 ? .75 : .34;
+    ctx.fillRect(x + stripe * awningW / 7,y,awningW / 7 + .25,7);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function sizeTiles() {
+  const dpr = Math.min(devicePixelRatio || 1,2);
+  cellViews.forEach(({canvas}, index) => {
+    const {width,height} = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1,Math.round(width * dpr));
+    canvas.height = Math.max(1,Math.round(height * dpr));
+    drawTile(index);
+  });
+  drawCity();
+}
+
+for (let index = 0; index < size * size; index++) {
+  const button = document.createElement("button");
+  button.className = "tile";
+  button.type = "button";
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden","true");
+  button.append(canvas);
+  button.addEventListener("click", () => turnCell(index));
+  board.append(button);
+  cellViews.push({button,canvas});
+}
+
+byId("start").addEventListener("click", start);
+byId("pause").addEventListener("click", () => {
+  if (mode === "running") {
+    changeMode("paused");
+  } else if (mode === "cleared" && automatic) {
+    automatic = false;
+    render();
+    queueAuto();
+  }
+});
+byId("reset").addEventListener("click", reset);
+byId("auto").addEventListener("click", toggleAuto);
+initializeLevel(0);
+new ResizeObserver(sizeTiles).observe(document.querySelector(".field"));
+setInterval(drawClock, 150);
+</script>
+</body>
+</html>
